@@ -1,0 +1,95 @@
+version: 2
+
+models:
+  - name: fct_invoice_line_items
+    description: >
+      One row per invoice line item, with Confido product, global customer and
+      distribution center resolved from the external accounting system's remote ids
+      where possible. Quantity is deliberately excluded.
+
+      Internal ids are null when the external record can't be resolved; the
+      product_match_status and customer_match_status columns explain why. Dollar totals
+      are complete regardless - no row is dropped for failing to resolve.
+    columns:
+      - name: invoice_line_item_id
+        description: Primary key.
+        data_tests: [unique, not_null]
+
+      - name: invoice_id
+        data_tests: [not_null]
+
+      - name: invoice_number
+        description: Not unique across invoices.
+
+      - name: invoice_created_at
+        data_tests: [not_null]
+
+      - name: invoice_paid_on_date
+        data_tests: [not_null]
+
+      - name: amount
+        description: Billed dollars for the line. Negative on credits, occasionally zero.
+        data_tests: [not_null]
+
+      - name: currency_code
+        description: Null on most invoices in the source; not defaulted.
+
+      - name: item_remote_id
+        description: Item key in the accounting system.
+        data_tests: [not_null]
+
+      - name: item_name
+        data_tests: [not_null]
+
+      - name: product_id
+        description: Null unless the item maps to exactly one Confido product.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_confido__products')
+                field: product_id
+
+      - name: product_match_status
+        description: matched / ambiguous / unmapped.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['matched', 'ambiguous', 'unmapped']
+
+      - name: product_candidate_count
+        description: How many products share this item. 1 when matched.
+        data_tests: [not_null]
+
+      - name: customer_remote_id
+        description: Customer key in the accounting system.
+        data_tests: [not_null]
+
+      - name: global_customer_id
+        description: Null where the remote id resolves to nothing.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_confido__global_customers')
+                field: global_customer_id
+
+      - name: customer_match_status
+        description: >
+          matched / matched_via_parent / contact_not_mapped / unresolved_remote_id.
+          The last covers the synthetic GENERATED_<hash> ids, about two thirds of invoices.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['matched', 'matched_via_parent', 'contact_not_mapped', 'unresolved_remote_id']
+
+      - name: distribution_center_id
+        description: Always null today - upstream doesn't populate the link yet.
+
+      - name: company_detail_id
+        description: Tenant.
+        data_tests: [not_null]
+
+      - name: source_updated_at
+        description: Latest _updated_at across the line and its invoice.
+        data_tests: [not_null]
