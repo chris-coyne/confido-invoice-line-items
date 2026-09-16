@@ -1,0 +1,30 @@
+version: 2
+
+models:
+  - name: stg_confido__invoices
+    description: One row per invoice header, renamed off the source.
+    columns:
+      - name: invoice_id
+        description: Primary key.
+        data_tests: [unique, not_null]
+
+      - name: invoice_number
+        description: >
+          Invoice number from the accounting system. Not unique - "REPAY INVOICE REALLY"
+          sits on two different invoice_ids, so there's deliberately no uniqueness test
+          here. A test that fails on correct data just teaches people to ignore failures.
+
+      - name: customer_remote_id
+        description: >
+          Customer key in the accounting system. About 64% of invoices carry a synthetic
+          GENERATED_<hash> value that has no Confido counterpart. Resolved (or not) in
+          int_contacts__entity_resolution.
+        data_tests: [not_null]
+
+      - name: currency_code
+        description: >
+          Left null where the source is null (1,738 of 2,516 invoices). Defaulting these
+          to USD would be a guess about money, so we surface the gap instead.
+
+      - name: subsidiary_id
+        description: Not a usable join key - see stg_confido__map_contact_subsidiaries.

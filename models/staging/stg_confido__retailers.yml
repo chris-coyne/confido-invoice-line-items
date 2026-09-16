@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: stg_confido__retailers
+    description: >
+      One row per retailer. Nothing joins invoices to retailers, so the mart doesn't use
+      it - see the model header.
+    columns:
+      - name: retailer_id
+        description: Primary key.
+        data_tests: [unique, not_null]
+
+      - name: retailer_uuid
+        description: Unique, but shares no values with global_customers._uuid.
+        data_tests: [unique, not_null]
+
+      - name: retailer_name
+        data_tests: [not_null]

@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: stg_confido__product_shipping_configs
+    description: >
+      One row per shipping substitution rule. Fulfilment rather than billing, so the mart
+      doesn't use it. The source has no id column, so this model hashes its five-column
+      grain into a surrogate key.
+    columns:
+      - name: product_shipping_config_id
+        description: >
+          Surrogate key over product_id, global_customer_id, distribution_center_id,
+          forecast_version_id and effective_at.
+        data_tests: [unique, not_null]
+
+      - name: product_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_confido__products')
+                field: product_id

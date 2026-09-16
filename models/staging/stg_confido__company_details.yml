@@ -1,0 +1,11 @@
+version: 2
+
+models:
+  - name: stg_confido__company_details
+    description: One row per tenant. Single tenant in this extract (id 40).
+    columns:
+      - name: company_detail_id
+        description: Primary key.
+        data_tests: [unique, not_null]
+      - name: company_name
+        data_tests: [not_null]

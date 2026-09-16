@@ -1,0 +1,14 @@
+version: 2
+
+models:
+  - name: stg_confido__products
+    description: One row per Confido product.
+    columns:
+      - name: product_id
+        description: Primary key.
+        data_tests: [unique, not_null]
+
+      - name: item_id
+        description: >
+          Optional link back to an accounting-system item. Nullable and not unique -
+          several products can share one item_id.

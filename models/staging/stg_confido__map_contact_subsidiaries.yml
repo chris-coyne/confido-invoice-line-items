@@ -1,0 +1,23 @@
+version: 2
+
+models:
+  - name: stg_confido__map_contact_subsidiaries
+    description: >
+      One row per contact-to-subsidiary mapping. Staged but not used by the mart - see the
+      model header for the 47x fanout this causes if you join it to invoices.
+    columns:
+      - name: contact_subsidiary_map_id
+        description: Primary key.
+        data_tests: [unique, not_null]
+
+      - name: contact_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_confido__contacts')
+                field: contact_id
+
+      - name: subsidiary_id
+        description: One distinct value across all 47 rows. This is why it can't be joined on.
+        data_tests: [not_null]

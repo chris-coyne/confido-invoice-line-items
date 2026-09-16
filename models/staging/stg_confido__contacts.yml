@@ -1,0 +1,33 @@
+version: 2
+
+models:
+  - name: stg_confido__contacts
+    description: >
+      One row per accounting-system contact. The bridge from an invoice's
+      customer_remote_id to Confido's internal customer entities.
+    columns:
+      - name: contact_id
+        description: Primary key.
+        data_tests: [unique, not_null]
+
+      - name: contact_remote_id
+        description: Natural key from the accounting system.
+        data_tests: [unique, not_null]
+
+      - name: global_customer_id
+        description: Null on 32 of 47 contacts.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_confido__global_customers')
+                field: global_customer_id
+
+      - name: distribution_center_id
+        description: >
+          Null on every row today, so the mart's distribution center columns come back
+          empty. The join is wired up so it starts working when upstream fills this in.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_confido__distribution_centers')
+                field: distribution_center_id

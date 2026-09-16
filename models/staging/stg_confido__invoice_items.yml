@@ -1,0 +1,33 @@
+version: 2
+
+models:
+  - name: stg_confido__invoice_items
+    description: One row per invoice line item. The grain the mart is built on.
+    columns:
+      - name: invoice_line_item_id
+        description: Primary key.
+        data_tests: [unique, not_null]
+
+      - name: invoice_id
+        description: FK to stg_confido__invoices.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_confido__invoices')
+                field: invoice_id
+
+      - name: amount
+        description: >
+          Billed dollar amount for the line. Six lines are negative (credits) and two are
+          zero; both are legitimate, so there's no positivity test.
+        data_tests: [not_null]
+
+      - name: item_remote_id
+        description: Item key in the accounting system.
+        data_tests: [not_null]
+
+      - name: quantity
+        description: >
+          Carried through staging but dropped from the mart - the brief doesn't ask for it
+          and it disagrees with amount / unit_price on most rows.

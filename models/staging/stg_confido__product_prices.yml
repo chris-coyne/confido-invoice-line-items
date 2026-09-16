@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: stg_confido__product_prices
+    description: >
+      One row per product price record. Contracted price, not invoiced actuals, so the
+      mart doesn't use it.
+    columns:
+      - name: product_price_id
+        description: Primary key.
+        data_tests: [unique, not_null]
+
+      - name: product_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_confido__products')
+                field: product_id
+
+      - name: price_amount
+        data_tests: [not_null]

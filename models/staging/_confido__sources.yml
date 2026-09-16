@@ -1,0 +1,135 @@
+version: 2
+
+sources:
+  - name: confido
+    description: >
+      Confido application database. Invoices and invoice items are synced in from an
+      external accounting system and carry that system's remote ids; everything else
+      here is a Confido internal entity.
+    database: confido_demo
+    schema: public
+
+    tables:
+      - name: invoices
+        description: One row per invoice header, synced from the accounting system.
+        columns:
+          - name: id
+            data_tests: [unique, not_null]
+          - name: number
+            description: Not unique - two invoices share the number "REPAY INVOICE REALLY".
+          - name: customer_remote_id
+            description: >
+              Customer key in the accounting system, joins to contacts.remote_id. Roughly
+              two thirds of invoices carry a synthetic GENERATED_<hash> value that the
+              sync mints when there's no real customer record to point at.
+          - name: subsidiary_id
+            description: >
+              Don't join on this. map_contact_subsidiaries has 47 rows but only one
+              distinct subsidiary_id, so it fans 2,516 invoices out to 118,252.
+
+      - name: invoice_items
+        description: One row per invoice line item.
+        columns:
+          - name: id
+            data_tests: [unique, not_null]
+          - name: invoice_id
+            data_tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('confido', 'invoices')
+                    field: id
+          - name: total_amount
+            description: The billed amount. Not recomputed from quantity * unit_price.
+            data_tests: [not_null]
+          - name: item_remote_id
+            description: Item key in the accounting system, joins to items.remote_id.
+
+      - name: items
+        description: >
+          Accounting-system items. Coarser than Confido's product catalog - one item can
+          map to several products.
+        columns:
+          - name: id
+            data_tests: [unique, not_null]
+          - name: remote_id
+            data_tests: [unique, not_null]
+
+      - name: products
+        description: Confido product catalog. item_id is many-to-one against items.
+        columns:
+          - name: id
+            data_tests: [unique, not_null]
+          - name: item_id
+            description: Optional, and shared by multiple products - hence the ambiguity.
+
+      - name: contacts
+        description: >
+          Accounting-system contacts. The bridge from customer_remote_id to Confido
+          global customers and distribution centers.
+        columns:
+          - name: id
+            data_tests: [unique, not_null]
+          - name: remote_id
+            data_tests: [unique, not_null]
+          - name: distribution_center_id
+            description: Null on all 47 rows today, so no invoice reaches a DC yet.
+
+      - name: global_customers
+        description: Confido internal customer entity.
+        columns:
+          - name: id
+            data_tests: [unique, not_null]
+
+      - name: confido_distribution_centers
+        description: Confido internal distribution center entity.
+        columns:
+          - name: id
+            data_tests: [unique, not_null]
+
+      - name: company_details
+        description: >
+          Tenant registry. company_detail_id appears on every other table; this extract
+          has a single tenant (id 40, Confido Baked Goods).
+        columns:
+          - name: id
+            data_tests: [unique, not_null]
+
+      # The five below are staged for completeness but nothing downstream uses them.
+      # Each staging model's header says what it was checked for and why it was dropped.
+
+      - name: map_contact_subsidiaries
+        description: Contact-to-subsidiary mapping. Unusable as a join path, see above.
+        columns:
+          - name: id
+            data_tests: [unique, not_null]
+
+      - name: product_prices
+        description: Contracted price per product, optionally scoped by customer/DC/date.
+        columns:
+          - name: id
+            data_tests: [unique, not_null]
+
+      - name: product_relationships
+        description: Parent/child product composition, e.g. a case and its units.
+        columns:
+          - name: id
+            data_tests: [unique, not_null]
+
+      - name: product_shipping_configs
+        description: >
+          Shipping substitution rules. The only source table with no id column; its grain
+          is product / customer / DC / forecast version / effective date.
+        columns:
+          - name: product_id
+            data_tests: [not_null]
+
+      - name: retailers
+        description: >
+          Retailer reference data from the Muffin platform. No foreign key reaches
+          invoices.
+        columns:
+          - name: id
+            data_tests: [unique, not_null]
+          - name: _uuid
+            data_tests: [unique, not_null]

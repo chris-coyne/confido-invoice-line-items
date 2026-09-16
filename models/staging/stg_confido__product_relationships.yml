@@ -1,0 +1,27 @@
+version: 2
+
+models:
+  - name: stg_confido__product_relationships
+    description: >
+      One row per parent/child product relationship. Not used by the mart; evaluated as an
+      ambiguity tiebreaker and rejected.
+    columns:
+      - name: product_relationship_id
+        description: Primary key.
+        data_tests: [unique, not_null]
+
+      - name: parent_product_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_confido__products')
+                field: product_id
+
+      - name: child_product_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_confido__products')
+                field: product_id

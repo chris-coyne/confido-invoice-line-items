@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: stg_confido__distribution_centers
+    description: One row per Confido distribution center.
+    columns:
+      - name: distribution_center_id
+        description: Primary key.
+        data_tests: [unique, not_null]
+      - name: global_customer_id
+        description: Owning global customer.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_confido__global_customers')
+                field: global_customer_id

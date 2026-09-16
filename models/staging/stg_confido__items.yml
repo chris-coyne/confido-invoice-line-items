@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: stg_confido__items
+    description: >
+      One row per accounting-system item. Coarser than Confido's product catalog, which
+      is the root of the product ambiguity.
+    columns:
+      - name: item_id
+        description: Primary key.
+        data_tests: [unique, not_null]
+
+      - name: item_remote_id
+        description: Natural key from the accounting system. Joins to invoice line items.
+        data_tests: [unique, not_null]

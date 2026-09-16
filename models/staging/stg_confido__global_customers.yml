@@ -1,0 +1,11 @@
+version: 2
+
+models:
+  - name: stg_confido__global_customers
+    description: One row per Confido global customer.
+    columns:
+      - name: global_customer_id
+        description: Primary key.
+        data_tests: [unique, not_null]
+      - name: global_customer_name
+        data_tests: [not_null]
