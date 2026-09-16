@@ -1,0 +1,37 @@
+version: 2
+
+models:
+  - name: int_items__product_resolution
+    description: >
+      One row per accounting-system item, with the Confido product it resolves to.
+      Unique on item_id, which is what stops the product join fanning out in the mart.
+    columns:
+      - name: item_id
+        description: Primary key.
+        data_tests: [unique, not_null]
+
+      - name: item_remote_id
+        description: Join key from invoice lines.
+        data_tests: [unique, not_null]
+
+      - name: product_id
+        description: Only populated when the item maps to exactly one product.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_confido__products')
+                field: product_id
+
+      - name: product_match_status
+        description: >
+          matched = one candidate product; ambiguous = several and nothing distinguishes
+          them; unmapped = none, in practice fees and discounts rather than goods.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['matched', 'ambiguous', 'unmapped']
+
+      - name: product_candidate_count
+        description: Products sharing this item_id. Lets consumers see how ambiguous a row is.
+        data_tests: [not_null]

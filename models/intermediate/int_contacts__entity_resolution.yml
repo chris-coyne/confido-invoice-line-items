@@ -1,0 +1,37 @@
+version: 2
+
+models:
+  - name: int_contacts__entity_resolution
+    description: >
+      One row per accounting-system contact, with the Confido global customer and
+      distribution center it resolves to. Unique on contact_remote_id, which is the
+      key invoices join on.
+    columns:
+      - name: contact_id
+        description: Primary key.
+        data_tests: [unique, not_null]
+
+      - name: contact_remote_id
+        description: Join key from invoices.
+        data_tests: [unique, not_null]
+
+      - name: global_customer_id
+        description: Own value, or the parent contact's where the contact is a child.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_confido__global_customers')
+                field: global_customer_id
+
+      - name: customer_match_status
+        description: >
+          matched = contact maps directly; matched_via_parent = inherited from the parent
+          contact; contact_not_mapped = contact exists but has no global customer.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['matched', 'matched_via_parent', 'contact_not_mapped']
+
+      - name: distribution_center_id
+        description: Null on every row - upstream doesn't populate contacts.distribution_center_id yet.
