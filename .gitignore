@@ -1,0 +1,14 @@
+# dbt
+target/
+dbt_packages/
+logs/
+.user.yml
+
+# python
+.venv/
+__pycache__/
+*.pyc
+
+# secrets
+.env
+*.pem

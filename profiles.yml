@@ -1,0 +1,14 @@
+default:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: your_account_locator
+      user: YOUR_USER
+      password: "{{ env_var('DBT_ENV_SECRET_CONFIDO_SNOWFLAKE_PASSWORD') }}"
+      role: YOUR_ROLE
+      database: confido_interviews
+      warehouse: confido_interview
+      schema: YOUR_DEV_SCHEMA
+      threads: 4
+      authenticator: username_password_mfa
