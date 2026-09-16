@@ -28,12 +28,14 @@ most rows.
 ## Running it
 
 ```bash
-export DBT_ENV_SECRET_CONFIDO_SNOWFLAKE_PASSWORD='...'
+cp .env.example .env     # fill in your Snowflake account, user, role, schema, password
+set -a && source .env && set +a
 dbt deps
 dbt build
 ```
 
-`profiles.yml` sits in the repo root and dbt picks it up from there. 16 models, 124 tests.
+`profiles.yml` sits in the repo root and dbt reads it from there. Connection details come
+from the environment, so nothing environment-specific is committed. 16 models, 124 tests.
 
 ## Layout
 
