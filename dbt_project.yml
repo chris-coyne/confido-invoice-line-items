@@ -2,15 +2,8 @@ name: 'confido_case'
 version: '1.0.0'
 config-version: 2
 
-# Must match the top-level key in profiles.yml
+# matches the top-level key in profiles.yml
 profile: 'default'
-
-model-paths: ["models"]
-analysis-paths: ["analyses"]
-test-paths: ["tests"]
-seed-paths: ["seeds"]
-macro-paths: ["macros"]
-snapshot-paths: ["snapshots"]
 
 clean-targets:
   - "target"

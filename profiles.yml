@@ -3,12 +3,15 @@ default:
   outputs:
     dev:
       type: snowflake
-      account: your_account_locator
-      user: YOUR_USER
+
+      # connection identity comes from the environment - see .env.example
+      account: "{{ env_var('CONFIDO_SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('CONFIDO_SNOWFLAKE_USER') }}"
       password: "{{ env_var('DBT_ENV_SECRET_CONFIDO_SNOWFLAKE_PASSWORD') }}"
-      role: YOUR_ROLE
+      role: "{{ env_var('CONFIDO_SNOWFLAKE_ROLE') }}"
+      schema: "{{ env_var('CONFIDO_SNOWFLAKE_SCHEMA') }}"
+
       database: confido_interviews
       warehouse: confido_interview
-      schema: YOUR_DEV_SCHEMA
       threads: 4
       authenticator: username_password_mfa
