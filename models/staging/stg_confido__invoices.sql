@@ -13,7 +13,7 @@ renamed as (
         number as invoice_number,
         currency as currency_code,
         created_at as invoice_created_at,
-        paid_on_date as invoice_paid_on_date,
+        paid_on_date::date as invoice_paid_on_date,
 
         -- kept for traceability, but subsidiary_id is not a usable join key.
         -- see stg_confido__map_contact_subsidiaries for the reason.

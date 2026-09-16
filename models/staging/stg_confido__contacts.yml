@@ -24,8 +24,8 @@ models:
 
       - name: distribution_center_id
         description: >
-          Null on every row today, so the mart's distribution center columns come back
-          empty. The join is wired up so it starts working when upstream fills this in.
+          Null on every row today, so the mart's DC columns come back empty. The join
+          is in place for when upstream starts populating it.
         data_tests:
           - relationships:
               arguments:

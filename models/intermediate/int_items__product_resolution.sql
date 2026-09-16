@@ -3,7 +3,7 @@
 -- products.item_id is many-to-one against items, so joining products straight onto
 -- invoice lines fans 2,527 rows out to 5,853 and inflates revenue by 58%. This model
 -- collapses to one row per item first and only hands back a product_id when there is
--- exactly one candidate, which makes that fanout impossible downstream.
+-- exactly one candidate, so the mart can't fan out.
 
 with items as (
     select * from {{ ref('stg_confido__items') }}
@@ -16,44 +16,44 @@ products as (
 
 candidates as (
     select
-        items.item_id,
-        count(products.product_id) as product_candidate_count,
+        i.item_id,
+        count(p.product_id)::number(38,0) as product_candidate_count,
         -- only used when the count is 1
-        min(products.product_id) as matched_product_id
-    from items
-    left join products on products.item_id = items.item_id
-    group by 1
+        min(p.product_id) as matched_product_id
+    from items i
+    left join products p on p.item_id = i.item_id
+    group by i.item_id
 ),
 
 resolved as (
     select
-        items.item_id,
-        items.item_remote_id,
-        items.item_name,
-        candidates.product_candidate_count,
+        i.item_id,
+        i.item_remote_id,
+        i.item_name,
+        c.product_candidate_count,
 
         case
-            when candidates.product_candidate_count = 1 then 'matched'
-            when candidates.product_candidate_count > 1 then 'ambiguous'
+            when c.product_candidate_count = 1 then 'matched'
+            when c.product_candidate_count > 1 then 'ambiguous'
             else 'unmapped'
         end as product_match_status,
 
         case
-            when candidates.product_candidate_count = 1 then candidates.matched_product_id
+            when c.product_candidate_count = 1 then c.matched_product_id
         end as product_id
-    from items
-    join candidates on candidates.item_id = items.item_id
+    from items i
+    join candidates c on c.item_id = i.item_id
 )
 
 select
-    resolved.item_id,
-    resolved.item_remote_id,
-    resolved.item_name,
-    resolved.product_id,
-    products.product_name,
-    products.product_upc,
-    products.product_type,
-    resolved.product_match_status,
-    resolved.product_candidate_count
-from resolved
-left join products on products.product_id = resolved.product_id
+    r.item_id,
+    r.item_remote_id,
+    r.item_name,
+    r.product_id,
+    p.product_name,
+    p.product_upc,
+    p.product_type,
+    r.product_match_status,
+    r.product_candidate_count
+from resolved r
+left join products p on p.product_id = r.product_id

@@ -11,8 +11,7 @@ models:
       - name: invoice_number
         description: >
           Invoice number from the accounting system. Not unique - "REPAY INVOICE REALLY"
-          sits on two different invoice_ids, so there's deliberately no uniqueness test
-          here. A test that fails on correct data just teaches people to ignore failures.
+          sits on two different invoice_ids, so no uniqueness test here.
 
       - name: customer_remote_id
         description: >
@@ -23,8 +22,7 @@ models:
 
       - name: currency_code
         description: >
-          Left null where the source is null (1,738 of 2,516 invoices). Defaulting these
-          to USD would be a guess about money, so we surface the gap instead.
+          Null on 1,738 of 2,516 invoices. Not defaulted to USD - that would be a guess.
 
       - name: subsidiary_id
         description: Not a usable join key - see stg_confido__map_contact_subsidiaries.

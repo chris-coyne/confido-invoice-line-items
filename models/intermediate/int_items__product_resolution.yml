@@ -4,7 +4,7 @@ models:
   - name: int_items__product_resolution
     description: >
       One row per accounting-system item, with the Confido product it resolves to.
-      Unique on item_id, which is what stops the product join fanning out in the mart.
+      Unique on item_id, which is what keeps the mart from fanning out.
     columns:
       - name: item_id
         description: Primary key.
@@ -33,5 +33,5 @@ models:
                 values: ['matched', 'ambiguous', 'unmapped']
 
       - name: product_candidate_count
-        description: Products sharing this item_id. Lets consumers see how ambiguous a row is.
+        description: Products sharing this item_id. 1 when matched, 0 when unmapped.
         data_tests: [not_null]

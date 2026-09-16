@@ -1,10 +1,11 @@
--- The mart must never drop, duplicate or re-value a source line. This is the test
--- that catches an accidental fanout, which is the easiest mistake to make here.
+-- Catches an accidental fanout: the mart should never drop, duplicate or re-value
+-- a source line. Source side is rounded the same way staging rounds it, so this is
+-- an exact comparison.
 
 with source as (
     select
         count(*) as lines,
-        sum(total_amount) as dollars
+        sum(total_amount::number(38,2)) as dollars
     from {{ source('confido', 'invoice_items') }}
 ),
 
@@ -23,4 +24,4 @@ select
 from source s
 cross join mart m
 where s.lines <> m.lines
-    or abs(s.dollars - m.dollars) > 0.01
+    or s.dollars <> m.dollars

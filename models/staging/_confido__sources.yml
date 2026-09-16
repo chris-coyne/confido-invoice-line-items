@@ -99,7 +99,9 @@ sources:
       # Each staging model's header says what it was checked for and why it was dropped.
 
       - name: map_contact_subsidiaries
-        description: Contact-to-subsidiary mapping. Unusable as a join path, see above.
+        description: >
+          Contact-to-subsidiary mapping. Unusable as a join path - see the subsidiary_id
+          note on invoices above.
         columns:
           - name: id
             data_tests: [unique, not_null]

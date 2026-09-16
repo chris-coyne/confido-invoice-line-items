@@ -1,4 +1,4 @@
--- Not used by the mart, and worth a warning: invoices.subsidiary_id looks like a
+-- Not used by the mart, but worth knowing about: invoices.subsidiary_id looks like a
 -- cleaner path to the customer than the messy text customer_remote_id, but this
 -- table has 47 rows sharing a single distinct subsidiary_id. Joining on it turns
 -- 2,516 invoices into 118,252 rows. Customer resolution goes through

@@ -4,9 +4,8 @@
 -- come from the intermediate models, which are each unique on their join key, so
 -- nothing here can fan out.
 --
--- Internal ids are null where the external record can't be resolved. The
--- *_match_status columns say why, so a consumer can filter on confidence instead
--- of guessing what a null means.
+-- Internal ids are null where the external record can't be resolved, and the
+-- *_match_status columns say which case you're looking at.
 
 with invoice_items as (
     select * from {{ ref('stg_confido__invoice_items') }}

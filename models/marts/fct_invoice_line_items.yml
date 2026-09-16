@@ -7,41 +7,59 @@ models:
       distribution center resolved from the external accounting system's remote ids
       where possible. Quantity is deliberately excluded.
 
-      Internal ids are null when the external record can't be resolved; the
-      product_match_status and customer_match_status columns explain why. Dollar totals
-      are complete regardless - no row is dropped for failing to resolve.
+      Internal ids are null where the external record can't be resolved and the
+      match_status columns say why. Nothing is dropped for failing to resolve, so the
+      totals still tie back to the source.
+
+      The contract is enforced - renaming, dropping or retyping a column fails the build.
+    config:
+      contract:
+        enforced: true
     columns:
       - name: invoice_line_item_id
+        data_type: number(38,0)
         description: Primary key.
         data_tests: [unique, not_null]
 
       - name: invoice_id
+        data_type: number(38,0)
         data_tests: [not_null]
 
       - name: invoice_number
+        data_type: varchar
         description: Not unique across invoices.
 
       - name: invoice_created_at
+        data_type: timestamp_ntz
         data_tests: [not_null]
 
       - name: invoice_paid_on_date
+        data_type: date
         data_tests: [not_null]
 
       - name: amount
-        description: Billed dollars for the line. Negative on credits, occasionally zero.
+        data_type: number(38,2)
+        description: >
+          Billed dollars for the line. Negative on credits, occasionally zero.
+          FLOAT upstream, rounded to cents here - that moves the total about $0.13
+          against the raw float sum, so the rounding is ours, not the source's.
         data_tests: [not_null]
 
       - name: currency_code
+        data_type: varchar
         description: Null on most invoices in the source; not defaulted.
 
       - name: item_remote_id
+        data_type: varchar
         description: Item key in the accounting system.
         data_tests: [not_null]
 
       - name: item_name
+        data_type: varchar
         data_tests: [not_null]
 
       - name: product_id
+        data_type: number(38,0)
         description: Null unless the item maps to exactly one Confido product.
         data_tests:
           - relationships:
@@ -49,7 +67,14 @@ models:
                 to: ref('stg_confido__products')
                 field: product_id
 
+      - name: product_name
+        data_type: varchar
+
+      - name: product_upc
+        data_type: varchar
+
       - name: product_match_status
+        data_type: varchar
         description: matched / ambiguous / unmapped.
         data_tests:
           - not_null
@@ -58,14 +83,17 @@ models:
                 values: ['matched', 'ambiguous', 'unmapped']
 
       - name: product_candidate_count
+        data_type: number(38,0)
         description: How many products share this item. 1 when matched.
         data_tests: [not_null]
 
       - name: customer_remote_id
+        data_type: varchar
         description: Customer key in the accounting system.
         data_tests: [not_null]
 
       - name: global_customer_id
+        data_type: number(38,0)
         description: Null where the remote id resolves to nothing.
         data_tests:
           - relationships:
@@ -73,7 +101,14 @@ models:
                 to: ref('stg_confido__global_customers')
                 field: global_customer_id
 
+      - name: global_customer_name
+        data_type: varchar
+
+      - name: is_distributor
+        data_type: boolean
+
       - name: customer_match_status
+        data_type: varchar
         description: >
           matched / matched_via_parent / contact_not_mapped / unresolved_remote_id.
           The last covers the synthetic GENERATED_<hash> ids, about two thirds of invoices.
@@ -84,12 +119,21 @@ models:
                 values: ['matched', 'matched_via_parent', 'contact_not_mapped', 'unresolved_remote_id']
 
       - name: distribution_center_id
+        data_type: number(38,0)
         description: Always null today - upstream doesn't populate the link yet.
 
+      - name: distribution_center_name
+        data_type: varchar
+
       - name: company_detail_id
+        data_type: number(38,0)
         description: Tenant.
         data_tests: [not_null]
 
+      - name: company_name
+        data_type: varchar
+
       - name: source_updated_at
+        data_type: timestamp_ntz
         description: Latest _updated_at across the line and its invoice.
         data_tests: [not_null]

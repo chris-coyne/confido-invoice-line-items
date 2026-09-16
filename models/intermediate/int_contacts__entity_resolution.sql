@@ -2,8 +2,8 @@
 -- distribution center.
 --
 -- Two contacts are children of another contact and have no global_customer_id of
--- their own, so they inherit the parent's. The hierarchy is one level deep, so a
--- single self-join is enough. Inherited matches are flagged rather than hidden.
+-- their own, so they take the parent's. Hierarchy is one level deep, so a single
+-- self-join covers it. Inherited matches get their own status.
 
 with contacts as (
     select * from {{ ref('stg_confido__contacts') }}
@@ -19,15 +19,14 @@ distribution_centers as (
 
 with_parent as (
     select
-        contacts.contact_id,
-        contacts.contact_remote_id,
-        contacts.contact_name,
-        contacts.global_customer_id as own_global_customer_id,
-        parent.global_customer_id as parent_global_customer_id,
-        contacts.distribution_center_id
-    from contacts
-    left join contacts as parent
-        on contacts.parent_contact_remote_id = parent.contact_remote_id
+        c.contact_id,
+        c.contact_remote_id,
+        c.contact_name,
+        c.global_customer_id as own_global_customer_id,
+        p.global_customer_id as parent_global_customer_id,
+        c.distribution_center_id
+    from contacts c
+    left join contacts p on c.parent_contact_remote_id = p.contact_remote_id
 ),
 
 resolved as (
@@ -43,19 +42,17 @@ resolved as (
 )
 
 select
-    resolved.contact_id,
-    resolved.contact_remote_id,
-    resolved.contact_name,
-    resolved.global_customer_id,
-    global_customers.global_customer_name,
-    global_customers.is_distributor,
-    resolved.customer_match_status,
+    r.contact_id,
+    r.contact_remote_id,
+    r.contact_name,
+    r.global_customer_id,
+    gc.global_customer_name,
+    gc.is_distributor,
+    r.customer_match_status,
 
     -- null on every row today; contacts.distribution_center_id is unpopulated upstream
-    resolved.distribution_center_id,
-    distribution_centers.distribution_center_name
-from resolved
-left join global_customers
-    on global_customers.global_customer_id = resolved.global_customer_id
-left join distribution_centers
-    on distribution_centers.distribution_center_id = resolved.distribution_center_id
+    r.distribution_center_id,
+    dc.distribution_center_name
+from resolved r
+left join global_customers gc on gc.global_customer_id = r.global_customer_id
+left join distribution_centers dc on dc.distribution_center_id = r.distribution_center_id
