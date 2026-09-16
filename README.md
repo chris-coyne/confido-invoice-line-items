@@ -12,14 +12,14 @@ One row per `invoice_items.id`. **2,527 rows, $8,329,402.21** — same rows and 
 as the source. Where an id can't be resolved the internal id is null and a status column
 says why.
 
-Product resolves on 1,651 lines (~$6.9M). 854 lines (~$1.4M) are ambiguous, and 22 (~$81k)
+Product resolves on 1,651 lines ($6.9M). 854 lines ($1.4M) are ambiguous, and 22 ($81k)
 map to nothing because they're fees and discounts rather than goods.
 
-Customer resolves on 911 lines (~$6.7M), 10 of those inherited from a parent contact.
-1,603 lines (~$1.6M) point at ids that don't exist on the Confido side, and 13 hit a
+Customer resolves on 911 lines ($6.7M), 10 of those inherited from a parent contact.
+1,603 lines ($1.6M) point at ids that don't exist on the Confido side, and 13 hit a
 contact that has no customer mapped to it.
 
-810 lines (~$5.6M, 67%) resolve on both sides. Filter on the statuses for clean
+810 lines ($5.6M, 67%) resolve on both sides. Filter on the statuses for clean
 product-by-customer revenue; use everything for AR totals and it still ties to source.
 
 Quantity is excluded — not asked for, and it disagrees with `total_amount / unit_price` on
@@ -66,7 +66,7 @@ both point at KeHE. Flagged `matched_via_parent`; resolves 7 more invoices.
 
 **Money is rounded to cents here, not upstream.** `total_amount` is a FLOAT carrying tails
 like `2020.4307500081`. Cast to `NUMBER(38,2)`, which rounds 1,738 rows and moves the total
-~$0.13. `paid_on_date` became a DATE — it was midnight on every row.
+by about $0.13. `paid_on_date` became a DATE — it was midnight on every row.
 
 **Currency left alone.** Null on 1,738 of 2,516 invoices; defaulting to USD would be
 inventing something about money.
